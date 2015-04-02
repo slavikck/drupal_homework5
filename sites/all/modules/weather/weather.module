@@ -1,0 +1,78 @@
+<?php
+
+function weather_block_info() {
+	$blocs['weather_block'] = array(
+		'info' => t('Weather block'),
+        'cache' => DRUPAL_NO_CACHE,
+	);
+	return $blocs;
+}
+ 
+function weather_block_view($delta = '') {
+	switch($delta){
+		case 'weather':
+            $block['subject'] = t('<p style="color: #3981c6;"><strong>Погода</strong></p>');
+			$block['content'] = block_function();
+			break;
+	}
+	return $block;
+}
+ 
+function block_function(){
+	$output = theme('weather_template', array( 'variable' => variable_get('city', 'NULL') ));
+	return $output;
+}
+ 
+function weather_theme() {
+	return array(
+		'weather_template' => array(
+			'template' => 'weather_template',
+			'variables' => array('variable' => 'Cherkassy')
+		)
+	);
+}
+
+function weather_menu() {
+    $items['forecast-in-other-cities'] = array(
+        'title' => 'Сторінка вибору міста',
+        'page callback' => 'main_function',
+        'access callback' => TRUE,
+        'menu_name' => 'main-menu',
+    );
+    return $items;
+}
+
+function my_first_form($form, &$form_state){
+    $form=array();
+    $form['name'] = array(
+        '#type'    => 'textfield',
+        '#title' => t('Введіть місто: (приклад написання імен: :kyiv, kharkiv, lvov, luhansk, smela)'),
+        '#default_value' => t('cherkassi'),
+    );
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Підтвердити'),
+    );
+    return $form;
+}
+
+function main_function(){
+	$form = drupal_get_form('my_first_form');
+	$form = drupal_render($form); 
+	return $form;
+}
+
+function my_first_form_validate($form, &$form_state){
+    if(mb_strlen($form_state['values']['name'])<3){
+        form_set_error('name', t("Введене ім'я коротке"));
+    }
+}
+
+function my_first_form_submit($form, &$form_state)
+{
+    $name = $form_state['values']['name'];
+    if ($name) {
+        variable_set('city', $name);
+  }
+}
+
